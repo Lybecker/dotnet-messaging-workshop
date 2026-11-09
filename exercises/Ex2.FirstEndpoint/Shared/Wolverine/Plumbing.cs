@@ -33,7 +33,11 @@ public static class Plumbing
             switch (broker)
             {
                 case Broker.ServiceBus: opts.UseAzureServiceBusEmulator().AutoProvision(); break;
-                case Broker.RabbitMq:   _rabbit = opts.UseRabbitMq(new Uri(DemoEnvironment.RabbitMqUri)).AutoProvision(); break;
+                case Broker.RabbitMq:
+                    _rabbit = opts.UseRabbitMq(new Uri(DemoEnvironment.RabbitMqUri)).AutoProvision();
+                    // Shared with M3, which declares Wolverine's system dead-letter queue as quorum.
+                    _rabbit.DeclareQueue("wolverine-dead-letter-queue", q => q.QueueType = QueueType.quorum);
+                    break;
             }
 
             opts.Discovery.DisableConventionalDiscovery();

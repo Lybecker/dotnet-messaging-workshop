@@ -38,7 +38,8 @@ public static class OrderStatus
     }
 
     /// <summary>GET /orders and the 's' key: the 10 most recent orders.</summary>
-    public static async Task<IResult> ListAsync() => Results.Ok(await LatestAsync());
+    public static async Task<IResult> ListAsync() =>
+        Results.Ok((await LatestAsync()).Select(o => new { o.Id, o.Customer, o.Status }));
 
     public static async Task<List<(Guid Id, string Customer, string Status)>> LatestAsync()
     {

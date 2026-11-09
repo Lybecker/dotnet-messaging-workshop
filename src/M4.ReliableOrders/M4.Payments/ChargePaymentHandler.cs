@@ -33,31 +33,41 @@ public class ChargePaymentHandler(IBus bus, IMessageContext context, ILogger<Cha
         });
         log.LogInformation("Charging {Amount} for order {OrderId} ({Customer}), attempt {Attempt}", cmd.Amount, cmd.OrderId, cmd.Customer, attempt);
 
-        // 1. Inbox: have we handled this message before?
-        if (!await context.TryRecordInInboxAsync(messageId, "payments"))
-        {
-            log.LogWarning("Duplicate message {MessageId} for order {OrderId}: already charged, skipped", messageId, cmd.OrderId);
-            return;                                                         // ack it, do nothing
-        }
-
-        await PaymentGateway.ChargeAsync(cmd, delayedRetries, log);        // may throw: transient or permanent
-
-        // 2. The business change, in the same transaction
         var (conn, tx) = SameTransaction.Of(context);
-        var reference = $"PAY-{cmd.OrderId.ToString()[..8]}";
-        await using (var insert = new SqlCommand(
-            "INSERT INTO dbo.Payments (OrderId, Reference, Amount) VALUES (@id, @ref, @amount)", conn, tx))
+        await tx.SaveAsync("ChargePayment");
+        try
         {
-            insert.Parameters.AddWithValue("@id", cmd.OrderId);
-            insert.Parameters.AddWithValue("@ref", reference);
-            insert.Parameters.AddWithValue("@amount", cmd.Amount);
-            await insert.ExecuteNonQueryAsync();
-        }
+            // 1. Inbox: have we handled this message before?
+            if (!await context.TryRecordInInboxAsync(messageId, "payments"))
+            {
+                log.LogWarning("Duplicate message {MessageId} for order {OrderId}: already charged, skipped", messageId, cmd.OrderId);
+                return;                                                         // ack it, do nothing
+            }
 
-        // 3. The event, through the outbox
-        await bus.Publish(new PaymentCharged(cmd.OrderId, reference, cmd.Amount));
-        log.LogInformation($"Charged {cmd.Amount} for order {cmd.OrderId}");                       // BAD: just a string
-        log.LogInformation("Charged {Amount} for order {OrderId} as {PaymentReference}",           // GOOD: queryable columns
-            cmd.Amount, cmd.OrderId, reference);
+            await PaymentGateway.ChargeAsync(cmd, delayedRetries, log);        // may throw: transient or permanent
+
+            // 2. The business change, in the same transaction
+            var reference = $"PAY-{cmd.OrderId.ToString()[..8]}";
+            await using (var insert = new SqlCommand(
+                "INSERT INTO dbo.Payments (OrderId, Reference, Amount) VALUES (@id, @ref, @amount)", conn, tx))
+            {
+                insert.Parameters.AddWithValue("@id", cmd.OrderId);
+                insert.Parameters.AddWithValue("@ref", reference);
+                insert.Parameters.AddWithValue("@amount", cmd.Amount);
+                await insert.ExecuteNonQueryAsync();
+            }
+
+            // 3. The event, through the outbox
+            await bus.Publish(new PaymentCharged(cmd.OrderId, reference, cmd.Amount));
+            log.LogInformation($"Charged {cmd.Amount} for order {cmd.OrderId}");                       // BAD: just a string
+            log.LogInformation("Charged {Amount} for order {OrderId} as {PaymentReference}",           // GOOD: queryable columns
+                cmd.Amount, cmd.OrderId, reference);
+        }
+        catch
+        {
+            // Second-level retries may handle the exception and commit the surrounding transaction.
+            await tx.RollbackAsync("ChargePayment");
+            throw;
+        }
     }
 }

@@ -43,6 +43,21 @@ docker compose up -d       # RabbitMQ (5673/15673), Service Bus emulator (5672/5
 Check startup with `docker compose ps` from `infra/`. All three services should be running.
 The emulator configuration uses duplicate-detection windows of at most five minutes,
 which is the emulator's limit.
+Rebus disables management operations against the emulator, so
+`infra/servicebus-emulator-config.json` predefines its queues and event subscriptions
+for M2 and Exercises 2/3. Subscriptions forward events to each Rebus input queue.
+After changing that file, restart the emulator and wait for its health endpoint:
+
+```bash
+docker compose -f infra/docker-compose.yml restart servicebus-emulator
+curl --fail http://localhost:5300/health
+```
+
+Run these commands from the repository root, with the local Service Bus demos stopped.
+The emulator can take about a minute to become healthy after restarting.
+Wolverine provisions its emulator entities through the management endpoint.
+Its exercises use the same quorum system dead-letter queue as M3, avoiding
+queue-type conflicts when switching between modules without deleting queues.
 
 Connection strings are in each project's `appsettings.json`:
 

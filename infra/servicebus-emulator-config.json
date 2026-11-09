@@ -4,6 +4,11 @@
       {
         "Name": "sbemulatorns",
         "Queues": [
+          { "Name": "payments-rebus", "Properties": { "RequiresDuplicateDetection": false } },
+          { "Name": "ex2-orders-rebus", "Properties": { "RequiresDuplicateDetection": false } },
+          { "Name": "ex2-shipping-rebus", "Properties": { "RequiresDuplicateDetection": false } },
+          { "Name": "ex3-payments-rebus", "Properties": { "RequiresDuplicateDetection": false } },
+          { "Name": "error", "Properties": { "RequiresDuplicateDetection": false } },
           {
             "Name": "payments",
             "Properties": {
@@ -34,6 +39,28 @@
           }
         ],
         "Topics": [
+          {
+            "Name": "Contracts/Contoso.Messaging.Contracts.PaymentCharged",
+            "Properties": { "RequiresDuplicateDetection": false },
+            "Subscriptions": [
+              { "Name": "orders-rebus", "Properties": { "ForwardTo": "orders-rebus" } },
+              { "Name": "ex3-payments-rebus", "Properties": { "ForwardTo": "ex3-payments-rebus" } }
+            ]
+          },
+          {
+            "Name": "Contracts/Contoso.Messaging.Contracts.PaymentFailed",
+            "Properties": { "RequiresDuplicateDetection": false },
+            "Subscriptions": [
+              { "Name": "ex3-payments-rebus", "Properties": { "ForwardTo": "ex3-payments-rebus" } }
+            ]
+          },
+          {
+            "Name": "Contracts/Contoso.Messaging.Contracts.OrderShipped",
+            "Properties": { "RequiresDuplicateDetection": false },
+            "Subscriptions": [
+              { "Name": "ex2-orders-rebus", "Properties": { "ForwardTo": "ex2-orders-rebus" } }
+            ]
+          },
           {
             "Name": "order-events",
             "Properties": {

@@ -111,6 +111,10 @@ deliberately crashes Orders, so restart it to see the guide again.
 
 Show the code between keys: `M4.Payments/Program.cs` (retry tiers, fail fast, outbox) and `ChargePaymentHandler.cs`
 (inbox + payment + event in one transaction).
+The payment handler uses a SQL savepoint to undo a failed attempt before Rebus
+handles second-level retries. Otherwise, a deferred retry could commit an inbox
+marker for an unsuccessful payment and later skip the retry as a duplicate.
+The order-status endpoint returns objects with `id`, `customer` and `status` fields.
 
 ## Slide 49 – the same run in Application Insights (about 10 min)
 

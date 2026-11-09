@@ -2,6 +2,7 @@ using Contoso.Messaging.Demo;
 using Wolverine;
 using Wolverine.AzureServiceBus;
 using Wolverine.RabbitMQ;
+using Wolverine.RabbitMQ.Internal;
 
 namespace Exercise3;
 
@@ -16,7 +17,11 @@ public static class ExerciseTransport
         switch (broker)
         {
             case Broker.ServiceBus: opts.UseAzureServiceBusEmulator().AutoProvision(); break;
-            case Broker.RabbitMq:   opts.UseRabbitMq(new Uri(DemoEnvironment.RabbitMqUri)).AutoProvision(); break;
+            case Broker.RabbitMq:
+                var rabbit = opts.UseRabbitMq(new Uri(DemoEnvironment.RabbitMqUri)).AutoProvision();
+                // Shared with M3, which declares Wolverine's system dead-letter queue as quorum.
+                rabbit.DeclareQueue("wolverine-dead-letter-queue", q => q.QueueType = QueueType.quorum);
+                break;
         }
     }
 
