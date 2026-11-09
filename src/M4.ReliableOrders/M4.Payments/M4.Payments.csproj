@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <ItemGroup>
+    <ProjectReference Include="../M4.Shared/M4.Shared.csproj" />
+    <!-- The ONE broker switch, shared from the repository root -->
+    <None Include="../../../broker.json" Link="broker.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

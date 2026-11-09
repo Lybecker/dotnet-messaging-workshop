@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../Contracts/Contracts.csproj" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <PackageReference Include="Azure.Identity" />
+    <Compile Include="../Shared/DemoEnvironment.cs" Link="Shared/DemoEnvironment.cs" />
+    <Compile Include="../Shared/Broker.cs" Link="Shared/Broker.cs" />
+    <!-- The ONE broker switch for every framework demo, shared from the repository root -->
+    <None Include="../../broker.json" Link="broker.json" CopyToOutputDirectory="PreserveNewest" />
+    <PackageReference Include="WolverineFx" />
+    <PackageReference Include="WolverineFx.RuntimeCompilation" />
+    <PackageReference Include="WolverineFx.AzureServiceBus" />
+    <PackageReference Include="WolverineFx.RabbitMQ" />
+  </ItemGroup>
+</Project>

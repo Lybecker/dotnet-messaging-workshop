@@ -1,0 +1,7 @@
+{
+  // ONE switch for every framework demo (M3.Wolverine, M2.Rebus) and Exercises 2 + 3.
+  //   "asb"    → Azure Service Bus (local emulator, or Azure when ASB_NAMESPACE is set)
+  //   "rabbit" → RabbitMQ
+  // Override per run without editing this file:  dotnet run -- asb   (or: BROKER=asb dotnet run)
+  "Broker": "rabbit"
+}

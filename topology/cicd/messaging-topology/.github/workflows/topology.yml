@@ -1,0 +1,80 @@
+# The shared Service Bus, from pull request to prod. Azure DevOps: same stages, same scripts.
+name: servicebus-topology
+
+on:
+  pull_request:
+    paths: [ 'platform/**', 'modules/**', 'teams/**', 'scripts/**' ]
+  push:
+    branches: [ main ]
+    paths: [ 'platform/**', 'modules/**', 'teams/**', 'scripts/**' ]
+  schedule:
+    - cron: '0 5 * * 1-5'              # drift check, weekdays 05:00 UTC
+  workflow_dispatch:
+
+permissions:
+  id-token: write                       # OIDC federated credentials: no secrets stored in GitHub
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: servicebus-topology            # one change at a time against the shared bus
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Naming and ownership rules
+        run: ./scripts/check-names.sh
+      - name: Build and lint every template
+        run: |
+          for f in platform/*.bicep modules/*.bicep teams/*/*.bicep; do
+            az bicep lint  --file "$f"
+            az bicep build --file "$f" --stdout > /dev/null
+          done
+
+  what-if:                              # what would change in test, posted on the pull request
+    if: github.event_name == 'pull_request'
+    needs: validate
+    runs-on: ubuntu-latest
+    environment: test-plan              # identity with read + what-if rights only
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/login@v2
+        with: { client-id: '${{ vars.AZURE_CLIENT_ID }}', tenant-id: '${{ vars.AZURE_TENANT_ID }}', subscription-id: '${{ vars.AZURE_SUBSCRIPTION_ID }}' }
+      - run: ./scripts/deploy.sh test what-if > whatif.txt 2>&1
+      - run: gh pr comment ${{ github.event.pull_request.number }} --body-file whatif.txt
+        env: { GH_TOKEN: '${{ github.token }}' }
+
+  deploy-test:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    needs: validate
+    runs-on: ubuntu-latest
+    environment: test                   # pipeline identity: the only control-plane rights in test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/login@v2
+        with: { client-id: '${{ vars.AZURE_CLIENT_ID }}', tenant-id: '${{ vars.AZURE_TENANT_ID }}', subscription-id: '${{ vars.AZURE_SUBSCRIPTION_ID }}' }
+      - run: ./scripts/deploy.sh test deploy
+
+  deploy-prod:
+    needs: deploy-test
+    runs-on: ubuntu-latest
+    environment: prod                   # required reviewers on this environment = the approval gate
+    steps:
+      - uses: actions/checkout@v4       # same commit that just went to test
+      - uses: azure/login@v2
+        with: { client-id: '${{ vars.AZURE_CLIENT_ID }}', tenant-id: '${{ vars.AZURE_TENANT_ID }}', subscription-id: '${{ vars.AZURE_SUBSCRIPTION_ID }}' }
+      - run: ./scripts/deploy.sh prod deploy
+
+  drift:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    environment: prod-plan              # read + what-if only, no reviewers needed
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/login@v2
+        with: { client-id: '${{ vars.AZURE_CLIENT_ID }}', tenant-id: '${{ vars.AZURE_TENANT_ID }}', subscription-id: '${{ vars.AZURE_SUBSCRIPTION_ID }}' }
+      - run: ./scripts/deploy.sh prod drift

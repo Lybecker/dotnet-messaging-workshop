@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../../../src/Contracts/Contracts.csproj" />
+    <Compile Include="../../../src/Shared/DemoEnvironment.cs" Link="Shared/DemoEnvironment.cs" />
+    <Compile Include="../../../src/Shared/Broker.cs" Link="Shared/Broker.cs" />
+    <Compile Include="../Shared/*.cs" Link="Shared/%(Filename)%(Extension)" />
+    <Compile Include="../Shared/Rebus/*.cs" Link="Shared/%(Filename)%(Extension)" />
+    <None Include="../../../broker.json" Link="broker.json" CopyToOutputDirectory="PreserveNewest" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <PackageReference Include="Azure.Identity" />
+    <PackageReference Include="Rebus" />
+    <PackageReference Include="Rebus.ServiceProvider" />
+    <PackageReference Include="Rebus.RabbitMq" />
+    <PackageReference Include="Rebus.AzureServiceBus" />
+  </ItemGroup>
+</Project>

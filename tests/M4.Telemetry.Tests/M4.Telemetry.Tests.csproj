@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../../src/M4.ReliableOrders/M4.Shared/M4.Shared.csproj" />
+  </ItemGroup>
+</Project>

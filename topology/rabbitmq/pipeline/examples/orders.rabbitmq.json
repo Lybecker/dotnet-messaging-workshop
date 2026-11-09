@@ -1,0 +1,9 @@
+{
+  "vhost": "contoso",
+  "owner": "orders",
+  "exchanges": [
+    "orders.order-placed.v1",
+    "orders.order-cancelled.v1"
+  ],
+  "queues": []
+}

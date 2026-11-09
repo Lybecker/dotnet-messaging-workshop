@@ -1,0 +1,46 @@
+// Run in Application Insights › Logs. Replace <order-id> with an id printed in the orders-api window.
+
+// 1 ─ Everything that happened to ONE order, across BOTH processes, in order
+let orderId = "<order-id>";
+let ops = union requests, traces
+    | where timestamp > ago(2h)
+    | where tostring(customDimensions.OrderId) == orderId or tostring(customDimensions["order.id"]) == orderId
+    | distinct operation_Id;
+union requests, dependencies, traces, exceptions
+| where timestamp > ago(2h) and operation_Id in (ops)
+| project timestamp, cloud_RoleName, itemType, what = coalesce(name, message, outerMessage), success,
+          Attempt = customDimensions.Attempt, DelayedRetries = customDimensions.DelayedRetries
+| order by timestamp asc
+
+// 2 ─ Retries: which orders needed more than one attempt or a delayed retry?
+traces
+| where timestamp > ago(2h) and cloud_RoleName == "payments-worker" and message startswith "Charging"
+| summarize attempts = count(), delayedRetries = max(toint(customDimensions.DelayedRetries))
+          by OrderId = tostring(customDimensions.OrderId)
+| where attempts > 1 or delayedRetries > 0
+
+// 3 ─ Duplicates the inbox stopped (charged once, delivered twice)
+traces
+| where timestamp > ago(2h) and message startswith "Duplicate message"
+| project timestamp, OrderId = customDimensions.OrderId, MessageId = customDimensions.MessageId
+
+// 4 ─ Failures by process and exception type: transient (TimeoutException) vs permanent (BusinessRuleViolationException)
+exceptions
+| where timestamp > ago(2h)
+| summarize count() by cloud_RoleName, type, outerMessage
+| order by count_ desc
+
+// 5 ─ Good vs bad log line: only the template version has OrderId and Amount as columns
+traces
+| where timestamp > ago(2h) and cloud_RoleName == "payments-worker" and message startswith "Charged"
+| project timestamp, message, OrderId = customDimensions.OrderId, Amount = customDimensions.Amount
+| take 10
+
+// 6 ─ Eventual consistency: time from "placed" (Pending) to "Paid", through the queue
+let placed = traces | where timestamp > ago(2h) and message has "placed by"
+                    | project OrderId = tostring(customDimensions.OrderId), placed = timestamp;
+let paid   = traces | where timestamp > ago(2h) and message has "is Paid"
+                    | project OrderId = tostring(customDimensions.OrderId), paid = timestamp;
+placed | join kind=inner paid on OrderId
+| extend seconds = datetime_diff('millisecond', paid, placed) / 1000.0
+| summarize p50 = percentile(seconds, 50), p95 = percentile(seconds, 95), max = max(seconds), orders = count()

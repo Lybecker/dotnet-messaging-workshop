@@ -1,0 +1,49 @@
+# RabbitMQ topology as code on Kubernetes (AKS) with the RabbitMQ Cluster Operator +
+# Messaging Topology Operator. Each consuming team deploys its own Queue + Binding (its "subscription").
+# Outside Kubernetes: rabbitmqadmin v2 in CI (see topology/rabbitmq/pipeline); definitions.json for dev only.
+apiVersion: rabbitmq.com/v1beta1
+kind: Exchange
+metadata: { name: order-events }
+spec:
+  name: order-events
+  type: topic
+  durable: true
+  rabbitmqClusterReference: { name: messaging }
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Queue
+metadata: { name: billing-order-events }
+spec:
+  name: billing.order-events
+  type: quorum
+  durable: true
+  arguments:
+    x-delivery-limit: 5
+    x-dead-letter-exchange: dlx
+    x-dead-letter-routing-key: billing.order-events
+    x-dead-letter-strategy: at-least-once
+    x-overflow: reject-publish
+  rabbitmqClusterReference: { name: messaging }
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Binding
+metadata: { name: billing-order-placed }
+spec:
+  source: order-events
+  destination: billing.order-events
+  destinationType: queue
+  routingKey: "orders.order-placed.*"
+  rabbitmqClusterReference: { name: messaging }
+---
+# Policies are the RabbitMQ way to apply settings to many queues centrally (governance)
+apiVersion: rabbitmq.com/v1beta1
+kind: Policy
+metadata: { name: default-quorum-limits }
+spec:
+  name: default-quorum-limits
+  pattern: ".*"
+  applyTo: queues
+  definition:
+    delivery-limit: 5
+    max-length-bytes: 1073741824
+  rabbitmqClusterReference: { name: messaging }

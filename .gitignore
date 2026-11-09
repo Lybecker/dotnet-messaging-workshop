@@ -55,3 +55,14 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+
+# Local machine and developer settings
+.DS_Store
+*.user
+*.suo
+.vs/
+.env.*
+!.env.example
+
+# Generated Azure demo settings (never publish local resource configuration)
+demo.settings.json

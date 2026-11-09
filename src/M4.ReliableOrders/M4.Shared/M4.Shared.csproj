@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Shared by both processes: message contracts, the broker switch, the database and the telemetry setup.
+       One assembly on purpose: Rebus derives topic names and the message-type header from the
+       assembly-qualified type name, so both processes must see the SAME type. -->
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <RootNamespace>M4</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <ProjectReference Include="../../Reliability/Reliability.csproj" />
+    <PackageReference Include="Azure.Identity" />
+    <PackageReference Include="Azure.Monitor.OpenTelemetry.AspNetCore" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.SqlClient" />
+    <PackageReference Include="Microsoft.Data.SqlClient" />
+    <PackageReference Include="Rebus" />
+    <PackageReference Include="Rebus.ServiceProvider" />
+    <PackageReference Include="Rebus.AzureServiceBus" />
+    <PackageReference Include="Rebus.RabbitMq" />
+    <PackageReference Include="Rebus.SqlServer" />
+    <PackageReference Include="Rebus.Diagnostics" />
+    <PackageReference Include="Rebus.OpenTelemetry" />
+    <Compile Include="../../Shared/DemoEnvironment.cs" Link="Shared/DemoEnvironment.cs" />
+    <Compile Include="../../Shared/Broker.cs" Link="Shared/Broker.cs" />
+  </ItemGroup>
+</Project>

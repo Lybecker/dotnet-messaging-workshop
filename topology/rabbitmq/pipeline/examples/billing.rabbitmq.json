@@ -1,0 +1,19 @@
+{
+  "vhost": "contoso",
+  "owner": "billing",
+  "exchanges": [],
+  "defaults": {
+    "delivery-limit": 10,
+    "message-ttl": 1209600000
+  },
+  "queues": [
+    {
+      "name": "billing.order-placed",
+      "bindings": [ { "exchange": "orders.order-placed.v1", "routingKey": "#" } ]
+    },
+    {
+      "name": "billing.order-cancelled",
+      "bindings": [ { "exchange": "orders.order-cancelled.v1", "routingKey": "#" } ]
+    }
+  ]
+}

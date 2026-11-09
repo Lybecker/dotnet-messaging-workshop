@@ -1,0 +1,26 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Contracts/Contracts.csproj" />
+    <Project Path="src/M1.Fundamentals/M1.Fundamentals.csproj" />
+    <Project Path="src/Reliability/Reliability.csproj" />
+    <Project Path="src/M3.Wolverine/M3.Wolverine.csproj" />
+    <Project Path="src/M2.Rebus/M2.Rebus.csproj" />
+    <Project Path="src/M4.ReliableOrders/M4.Shared/M4.Shared.csproj" />
+    <Project Path="src/M4.ReliableOrders/M4.Orders/M4.Orders.csproj" />
+    <Project Path="src/M4.ReliableOrders/M4.Payments/M4.Payments.csproj" />
+    <Project Path="src/M5.Sagas/M5.Sagas.csproj" />
+  </Folder>
+  <Folder Name="/exercises/">
+    <Project Path="exercises/Ex2.FirstEndpoint/Rebus.Starter/Ex2.Rebus.Starter.csproj" />
+    <Project Path="exercises/Ex2.FirstEndpoint/Rebus.Solution/Ex2.Rebus.Solution.csproj" />
+    <Project Path="exercises/Ex2.FirstEndpoint/Wolverine.Starter/Ex2.Wolverine.Starter.csproj" />
+    <Project Path="exercises/Ex2.FirstEndpoint/Wolverine.Solution/Ex2.Wolverine.Solution.csproj" />
+    <Project Path="exercises/Ex3.ReliableConsumer/Rebus.Starter/Ex3.Rebus.Starter.csproj" />
+    <Project Path="exercises/Ex3.ReliableConsumer/Rebus.Solution/Ex3.Rebus.Solution.csproj" />
+    <Project Path="exercises/Ex3.ReliableConsumer/Wolverine.Starter/Ex3.Wolverine.Starter.csproj" />
+    <Project Path="exercises/Ex3.ReliableConsumer/Wolverine.Solution/Ex3.Wolverine.Solution.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/M4.Telemetry.Tests/M4.Telemetry.Tests.csproj" />
+  </Folder>
+</Solution>
