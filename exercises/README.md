@@ -8,3 +8,7 @@
 | 4 | Operations & platform (slide 69) | [Design your topology](Ex4.Topology/README.md) | Pairs, whiteboard | 15 min |
 
 Exercises 2 and 3 use the same framework choice: whoever picked Rebus or Wolverine in Exercise 2 keeps it in Exercise 3.
+
+**No Docker?** Use the [Azure Service Bus exercise setup](azure/README.md).
+It includes a Bicep template, Entra ID permissions and commands for both frameworks.
+Each attendee needs a separate namespace; Azure resources incur charges.

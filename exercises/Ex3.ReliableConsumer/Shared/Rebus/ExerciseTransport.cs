@@ -16,7 +16,12 @@ public static class ExerciseTransport
     {
         switch (broker)
         {
-            case Broker.ServiceBus: t.UseAzureServiceBus(DemoEnvironment.EmulatorConnectionString, queue); break;
+            case Broker.ServiceBus:
+                if (DemoEnvironment.UseAzure)
+                    t.UseAzureServiceBus($"Endpoint=sb://{DemoEnvironment.ServiceBusNamespace}/", queue, DemoEnvironment.Credential);
+                else
+                    t.UseAzureServiceBus(DemoEnvironment.EmulatorConnectionString, queue);
+                break;
             case Broker.RabbitMq:   t.UseRabbitMq(DemoEnvironment.RabbitMqUri, queue); break;
         }
     }

@@ -13,6 +13,10 @@ Tasks 1 and 2 are the moves you already made in Exercise 2; the new part is task
 
 ## Before you start
 
+**Without Docker:** use the [Azure Service Bus setup](../azure/README.md).
+Keep the namespace from Exercise 2, configure this terminal and run with `-- asb`.
+Use Azure Service Bus Explorer instead of the RabbitMQ UI for error inspection.
+
 ```bash
 cd infra && docker compose up -d          # RabbitMQ on 5673 (UI http://localhost:15673), Service Bus emulator on 5672
 cd ../exercises/Ex3.ReliableConsumer/Rebus.Starter       # or Wolverine.Starter

@@ -23,6 +23,10 @@ Modules are numbered in the order they appear in the slides. **Each demo's `Prog
 
 ## Running locally
 
+For Exercises 2 and 3 without Docker, follow the
+[Azure Service Bus exercise setup](exercises/azure/README.md).
+It provisions a dedicated namespace with Bicep and uses your Azure CLI sign-in.
+
 ### Dev Container (optional)
 
 Install Docker Desktop (Linux containers on Windows) and the VS Code

@@ -34,7 +34,12 @@ public static class Plumbing
             {
                 switch (broker)
                 {
-                    case Broker.ServiceBus: t.UseAzureServiceBus(DemoEnvironment.EmulatorConnectionString, inputQueue); break;
+                    case Broker.ServiceBus:
+                        if (DemoEnvironment.UseAzure)
+                            t.UseAzureServiceBus($"Endpoint=sb://{DemoEnvironment.ServiceBusNamespace}/", inputQueue, DemoEnvironment.Credential);
+                        else
+                            t.UseAzureServiceBus(DemoEnvironment.EmulatorConnectionString, inputQueue);
+                        break;
                     case Broker.RabbitMq:   t.UseRabbitMq(DemoEnvironment.RabbitMqUri, inputQueue); break;
                 }
             })),

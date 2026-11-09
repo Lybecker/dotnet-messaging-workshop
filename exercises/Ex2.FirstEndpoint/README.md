@@ -18,6 +18,9 @@ Orders ◀──OrderShipped (event, Publish)── [topic / exchange] ◀──
 
 ## Before you start
 
+**Without Docker:** follow the [Azure Service Bus setup](../azure/README.md),
+then run with `-- asb` in both configured terminals. No database is required.
+
 ```bash
 cd infra && docker compose up -d                        # RabbitMQ on 5673 (UI http://localhost:15673), Service Bus emulator on 5672
 cd ../exercises/Ex2.FirstEndpoint/Rebus.Starter         # or Wolverine.Starter

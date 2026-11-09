@@ -16,7 +16,12 @@ public static class ExerciseTransport
     {
         switch (broker)
         {
-            case Broker.ServiceBus: opts.UseAzureServiceBusEmulator().AutoProvision(); break;
+            case Broker.ServiceBus:
+                var asb = DemoEnvironment.UseAzure
+                    ? opts.UseAzureServiceBus(DemoEnvironment.ServiceBusNamespace!, DemoEnvironment.Credential)
+                    : opts.UseAzureServiceBusEmulator();
+                asb.AutoProvision();
+                break;
             case Broker.RabbitMq:
                 var rabbit = opts.UseRabbitMq(new Uri(DemoEnvironment.RabbitMqUri)).AutoProvision();
                 // Shared with M3, which declares Wolverine's system dead-letter queue as quorum.
