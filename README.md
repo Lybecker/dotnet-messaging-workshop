@@ -23,6 +23,52 @@ Modules are numbered in the order they appear in the slides. **Each demo's `Prog
 
 ## Running locally
 
+### Dev Container (optional)
+
+Install Docker Desktop (Linux containers on Windows) and the VS Code
+**Dev Containers** extension (`ms-vscode-remote.remote-containers`). Open this
+repository and select **Dev Containers: Reopen in Container**.
+
+The container includes the .NET 10 SDK, Azure CLI with Bicep, GitHub CLI, Git,
+Bash, Python 3, curl, jq, OpenSSL, ShellCheck, and Docker with Compose v2.
+C#, Bicep, container and ShellCheck editor extensions are installed automatically.
+The first creation verifies the tools and restores the solution.
+If the creation restore fails because `api.nuget.org` is unreachable, keep the
+container open and run `dotnet restore MessagingTraining.slnx --source https://www.nuget.org/api/v2/`
+in its terminal, then continue below. Do not disable TLS verification.
+
+Inside the container terminal, from the repository root:
+
+```bash
+docker compose -f infra/docker-compose.yml up -d
+dotnet build MessagingTraining.slnx --no-restore
+dotnet run --project tests/M4.Telemetry.Tests
+```
+
+Docker-in-Docker keeps the training services isolated from the host's containers
+and preserves the samples' `localhost` addresses and Compose bind-mount paths.
+It requires a **privileged container**: use only with trusted repository content.
+Services are not started automatically. Their images/data use the Docker feature's
+volume; a container rebuild still requires starting Compose again. Stop them with
+`docker compose -f infra/docker-compose.yml stop`.
+
+The Orders (5180), Payments (5181), RabbitMQ UI (15673) and emulator health (5300)
+ports are forwarded to the host. Run the existing debug configurations and scripts
+inside the container. Host Docker services do not serve this isolated environment.
+
+For M4 Azure resources, sign in **inside** the container with
+`az login --use-device-code`, then follow its [runbook](src/M4.ReliableOrders/DEMO.md).
+Host Azure credentials are not mounted; sign in again after a rebuild.
+The local container selects `AzureCliCredential` to avoid managed-identity probing.
+Optional GitHub operations use `gh auth login`.
+
+On ARM64 machines SQL Server still needs x86-64 emulation, subject to the same
+support limitations below. The optional topology pipeline examples additionally
+require `rabbitmqadmin v2` or `kubectl` when targeting those platforms; neither is
+needed for the demos or exercises and neither is installed by this container.
+
+### Host setup
+
 Install Docker Desktop and the .NET 10 SDK. Run these commands from the repository root
 in PowerShell, Command Prompt or a Unix shell:
 
